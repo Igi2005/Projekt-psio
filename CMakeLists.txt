@@ -8,7 +8,13 @@ set(SFML_DIR "${CMAKE_SOURCE_DIR}/external/SFML-2.6.2/lib/cmake/SFML")
 
 find_package(SFML 2.6 REQUIRED COMPONENTS graphics window system)
 
-add_executable(sfml_project main.cpp)
+add_executable(sfml_project main.cpp
+        Game.cpp
+        Game.h
+        Player.cpp
+        Player.h
+        Map.cpp
+        Map.h)
 
 
 target_include_directories(sfml_project PRIVATE
