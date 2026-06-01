@@ -2,6 +2,7 @@
 
 TankMob::TankMob(sf::Vector2f startPosition)
     : Mob(startPosition, "tank_mob.jpg")
+
 {
     speed = 60.f;
     hp = 150;

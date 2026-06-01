@@ -1,9 +1,5 @@
-//
-// Created by Wetson on 26.05.2026.
-//
-
-#ifndef SFML_PROJECT_MAP_H
-#define SFML_PROJECT_MAP_H
+#ifndef MAP_H
+#define MAP_H
 
 #include <SFML/Graphics.hpp>
 
@@ -20,4 +16,4 @@ public:
     sf::Vector2f getSize() const;
 };
 
-#endif //SFML_PROJECT_MAP_H
+#endif
