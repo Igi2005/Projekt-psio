@@ -1,54 +1,67 @@
 #include "Game.h"
 
+#include <cstdlib>
+#include <ctime>
 
-//konstruktor  gry
-// :player() oznacza ze player() jest tworzony od razu przy tworzeniu obiektu GAME
-//argumenty mówia ze pobieramy wielkosc ekranu usera i stawiamy ludka mniej wiecej w polowie
-Game::Game() : player(sf::Vector2f(sf::VideoMode::getDesktopMode().width / 2.f,sf::VideoMode::getDesktopMode().height / 2.f))
+Game::Game()
+    : player(sf::Vector2f(
+        sf::VideoMode::getDesktopMode().width / 2.f,
+        sf::VideoMode::getDesktopMode().height / 2.f
+    )),
+      spawnTimer(0.f),
+      spawnCooldown(2.f)
 {
-    //zmienna ktora przechowuje info o ekranie
+    srand(static_cast<unsigned>(time(nullptr)));
+
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-    //tworzenie okienka gry arg1 - okno ma rozmiar jak ekran usera arg2 nazwa arg3 tryb pelnyekran
-    window.create(desktop,"Survival Arena",sf::Style::Fullscreen);
-    //limit klatek zeby kompa nie spalic
+
+    window.create(
+        desktop,
+        "Survival Arena",
+        sf::Style::Fullscreen
+    );
+
     window.setFramerateLimit(60);
-    //pobranie widoku z kamery
+
     worldView = window.getDefaultView();
-    //ustawienie na pozycje gracza
     worldView.setCenter(player.getPosition());
 }
 
-//uruchamia petle gry
+Game::~Game()
+{
+    for (Mob* mob : mobs)
+    {
+        delete mob;
+    }
+
+    mobs.clear();
+}
+
 void Game::run()
 {
-    //dopki okno jest otwarte
     while (window.isOpen())
     {
-        //liczenie czasu jaki minal od poprzedniej klatki
         float dt = clock.restart().asSeconds();
 
         processEvents();
-
         update(dt);
-
         render();
     }
 }
 
-//Funkcja do zamykania okna
 void Game::processEvents()
 {
     sf::Event event;
 
     while (window.pollEvent(event))
     {
-        //czy user kliknal x w prawym gornym
         if (event.type == sf::Event::Closed)
         {
             window.close();
         }
 
-        if (event.type == sf::Event::KeyPressed & event.key.code == sf::Keyboard::Escape)
+        if (event.type == sf::Event::KeyPressed &&
+            event.key.code == sf::Keyboard::Escape)
         {
             window.close();
         }
@@ -60,25 +73,48 @@ void Game::update(float dt)
     player.update(dt, map.getSize());
 
     updateCamera();
+
+    spawnTimer += dt;
+
+    if (spawnTimer >= spawnCooldown)
+    {
+        spawnMob();
+        spawnTimer = 0.f;
+    }
+
+    for (Mob* mob : mobs)
+    {
+        mob->update(dt, player.getPosition());
+    }
 }
 
-//funkcja zeby kamera sie poruszala za userem
+void Game::render()
+{
+    window.clear();
+
+    window.setView(worldView);
+
+    map.draw(window);
+    player.draw(window);
+
+    for (Mob* mob : mobs)
+    {
+        mob->draw(window);
+    }
+
+    window.display();
+}
+
 void Game::updateCamera()
 {
-    //pobranie pozycji
     sf::Vector2f playerPosition = player.getPosition();
-
-    //pobranie wielkosci mapy
     sf::Vector2f mapSize = map.getSize();
-    //pobranie widoku kamery
     sf::Vector2f viewSize = worldView.getSize();
 
     float halfWidth = viewSize.x / 2.f;
-
     float halfHeight = viewSize.y / 2.f;
 
     float cameraX = playerPosition.x;
-
     float cameraY = playerPosition.y;
 
     if (cameraX < halfWidth)
@@ -104,16 +140,44 @@ void Game::updateCamera()
     worldView.setCenter(cameraX, cameraY);
 }
 
-//rysowanie mapy gracza oraz kamery
-void Game::render()
+void Game::spawnMob()
 {
-    window.clear();
+    sf::Vector2f mapSize = map.getSize();
 
-    window.setView(worldView);
+    sf::Vector2f viewCenter = worldView.getCenter();
+    sf::Vector2f viewSize = worldView.getSize();
 
-    map.draw(window);
+    float left = viewCenter.x - viewSize.x / 2.f;
+    float right = viewCenter.x + viewSize.x / 2.f;
+    float top = viewCenter.y - viewSize.y / 2.f;
+    float bottom = viewCenter.y + viewSize.y / 2.f;
 
-    player.draw(window);
+    sf::Vector2f position;
 
-    window.display();
+    do
+    {
+        position.x = static_cast<float>(rand() % static_cast<int>(mapSize.x));
+        position.y = static_cast<float>(rand() % static_cast<int>(mapSize.y));
+
+    } while (
+        position.x > left &&
+        position.x < right &&
+        position.y > top &&
+        position.y < bottom
+    );
+
+    int randomType = rand() % 3;
+
+    if (randomType == 0)
+    {
+        mobs.push_back(new Mob(position, "mob.png"));
+    }
+    else if (randomType == 1)
+    {
+        mobs.push_back(new FastMob(position));
+    }
+    else
+    {
+        mobs.push_back(new TankMob(position));
+    }
 }

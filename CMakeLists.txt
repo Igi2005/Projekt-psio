@@ -14,7 +14,13 @@ add_executable(sfml_project main.cpp
         Player.cpp
         Player.h
         Map.cpp
-        Map.h)
+        Map.h
+        Mob.cpp
+        Mob.h
+        FastMob.cpp
+        FastMob.h
+        TankMob.cpp
+        TankMob.h)
 
 
 target_include_directories(sfml_project PRIVATE
