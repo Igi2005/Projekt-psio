@@ -1,11 +1,6 @@
-//
-// Created by Wetson on 26.05.2026.
-//
-
 #include "Map.h"
 #include <iostream>
 
-//konstruktor do wczytania mapy
 Map::Map()
 {
     if (!texture.loadFromFile("mapa.png"))
@@ -24,5 +19,8 @@ void Map::draw(sf::RenderWindow& window)
 
 sf::Vector2f Map::getSize() const
 {
-    return sf::Vector2f(static_cast<float>(texture.getSize().x),static_cast<float>(texture.getSize().y));
+    return sf::Vector2f(
+        static_cast<float>(texture.getSize().x),
+        static_cast<float>(texture.getSize().y)
+    );
 }
