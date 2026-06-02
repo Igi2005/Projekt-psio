@@ -67,13 +67,15 @@ void Game::processEvents()
 {
     sf::Event event;
 
+    //sprawdza wszystkie eventy z okna
     while (window.pollEvent(event))
     {
+        //klikniecie x
         if (event.type == sf::Event::Closed)
         {
             window.close();
         }
-
+        //klikniemy escape
         if (event.type == sf::Event::KeyPressed &&
             event.key.code == sf::Keyboard::Escape)
         {
@@ -84,12 +86,18 @@ void Game::processEvents()
 
 void Game::update(float dt)
 {
+    //aktualizuje gracza
     player.update(dt, map.getSize());
 
+    //update kamery zeby za graczem szla
     updateCamera();
-
+    //dodaje czas klatki do licznika spawnu.
     spawnTimer += dt;
-
+    //Aktualizuje wszystkie moby.
+    //Każdy mob dostaje:
+    //dt,
+    //pozycję gracza.
+    //Dzięki temu mob wie, w którą stronę ma iść.
     if (spawnTimer >= spawnCooldown)
     {
         spawnMob();
@@ -104,13 +112,17 @@ void Game::update(float dt)
 
 void Game::render()
 {
+    //Czyści ekran przed narysowaniem nowej klatki.
     window.clear();
 
+    //Ustawia kamerę świata
     window.setView(worldView);
 
+    //Rysuje mapę i gracza
     map.draw(window);
     player.draw(window);
 
+    //rysowanie mobow
     for (Mob* mob : mobs)
     {
         mob->draw(window);
@@ -123,8 +135,11 @@ void Game::render()
 
 void Game::updateCamera()
 {
+    //pobranie pozycji gracza
     sf::Vector2f playerPosition = player.getPosition();
+    //pobranie rozmiaru mapy
     sf::Vector2f mapSize = map.getSize();
+    //pobranie rozmiaru kamery
     sf::Vector2f viewSize = worldView.getSize();
 
     float halfWidth = viewSize.x / 2.f;
@@ -160,16 +175,20 @@ void Game::spawnMob()
 {
     sf::Vector2f mapSize = map.getSize();
 
+    //pobranie sroda kamery
     sf::Vector2f viewCenter = worldView.getCenter();
+    //pobranie rozmiaru kamery
     sf::Vector2f viewSize = worldView.getSize();
 
+    //pobranie granic kamery
     float left = viewCenter.x - viewSize.x / 2.f;
     float right = viewCenter.x + viewSize.x / 2.f;
     float top = viewCenter.y - viewSize.y / 2.f;
     float bottom = viewCenter.y + viewSize.y / 2.f;
-
+    //Tworzy zmienną na pozycję nowego moba.
     sf::Vector2f position;
-
+    //Losuje pozycję moba na mapie.
+    //Pętla działa tak długo, aż pozycja będzie poza aktualnym widokiem kamery.
     do
     {
         position.x = static_cast<float>(rand() % static_cast<int>(mapSize.x));
@@ -200,6 +219,7 @@ void Game::spawnMob()
 
 void Game::updateHud()
 {
+    //strumien ktory wyswietlamy na mapie
     std::stringstream ss;
 
     ss << "Player: " << playerName << "\n";
@@ -207,9 +227,9 @@ void Game::updateHud()
     ss << "Score: " << score;
 
     hudText.setString(ss.str());
-
+    //Pobiera rozmiar tekstu.
     sf::FloatRect bounds = hudText.getLocalBounds();
-
+    //ustawienie w prawym gornym rogu
     float x = window.getSize().x - bounds.width - 30.f;
     float y = 30.f;
 
@@ -218,6 +238,7 @@ void Game::updateHud()
 
 void Game::drawHud()
 {
+    //Przełącza kamerę na domyślny widok ekranu.
     window.setView(window.getDefaultView());
 
     updateHud();

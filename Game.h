@@ -14,31 +14,28 @@
 class Game
 {
 private:
+    //Okno gry, do którego rysujemy mapę, gracza, moby i HUD.
     sf::RenderWindow window;
+    //Kamera gry.
     sf::View worldView;
-
     Player player;
+    //Obiekt mapy, czyli obrazek mapa.png.
     Map map;
-
     std::vector<Mob*> mobs;
-
     sf::Clock clock;
-
+    //liczy czas od ostatniego spawnu,
     float spawnTimer;
+    //mówi, co ile sekund ma pojawić się nowy mob.
     float spawnCooldown;
-
     sf::Font font;
     sf::Text hudText;
-
     std::string playerName;
     int score;
-
     void processEvents();
     void update(float dt);
     void render();
     void updateCamera();
     void spawnMob();
-
     void updateHud();
     void drawHud();
 

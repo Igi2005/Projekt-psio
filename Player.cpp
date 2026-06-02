@@ -1,6 +1,7 @@
 #include "Player.h"
 #include <iostream>
 
+//tworzenie gracza plus ladowanie zdjecia awatara
 Player::Player(sf::Vector2f startPosition)
     : speed(250.f), hp(100)
 {
@@ -21,6 +22,7 @@ Player::Player(sf::Vector2f startPosition)
     sprite.setScale(0.2f, 0.2f);
 }
 
+//movement ruszanie sie wasd
 void Player::update(float dt, sf::Vector2f mapSize)
 {
     sf::Vector2f movement(0.f, 0.f);
@@ -71,7 +73,7 @@ void Player::update(float dt, sf::Vector2f mapSize)
     {
         position.y = mapSize.y - halfHeight;
     }
-
+    //ustawianie pozycji
     sprite.setPosition(position);
 }
 

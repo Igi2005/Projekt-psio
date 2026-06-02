@@ -29,7 +29,10 @@ Mob::~Mob()
 void Mob::update(float dt, sf::Vector2f playerPosition)
 {
     sf::Vector2f position = sprite.getPosition();
-
+    //gracz: (500, 300)
+    //mob:   (100, 200)
+    //direction = (500 - 100, 300 - 200)
+    //direction = (400, 100)
     sf::Vector2f direction(
         playerPosition.x - position.x,
         playerPosition.y - position.y
@@ -42,7 +45,7 @@ void Mob::update(float dt, sf::Vector2f playerPosition)
         direction.x /= length;
         direction.y /= length;
     }
-
+    //ruch do gracza
     sprite.move(direction * speed * dt);
 }
 
@@ -65,12 +68,13 @@ bool Mob::isAlive() const
 {
     return alive;
 }
-
+//Zwraca pozycję moba.
 sf::Vector2f Mob::getPosition() const
 {
     return sprite.getPosition();
 }
 
+//Zwraca prostokąt kolizji sprite’a.
 sf::FloatRect Mob::getBounds() const
 {
     return sprite.getGlobalBounds();
