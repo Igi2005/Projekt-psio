@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+#include <string>
 #include "Player.h"
 #include "Map.h"
 #include "Mob.h"
@@ -26,11 +27,20 @@ private:
     float spawnTimer;
     float spawnCooldown;
 
+    sf::Font font;
+    sf::Text hudText;
+
+    std::string playerName;
+    int score;
+
     void processEvents();
     void update(float dt);
     void render();
     void updateCamera();
     void spawnMob();
+
+    void updateHud();
+    void drawHud();
 
 public:
     Game();

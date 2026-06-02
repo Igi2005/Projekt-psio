@@ -2,6 +2,10 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
+#include <sstream>
+
+
 
 Game::Game()
     : player(sf::Vector2f(
@@ -9,9 +13,19 @@ Game::Game()
         sf::VideoMode::getDesktopMode().height / 2.f
     )),
       spawnTimer(0.f),
-      spawnCooldown(2.f)
+      spawnCooldown(2.f),
+      playerName("Robert"),
+      score(0)
 {
     srand(static_cast<unsigned>(time(nullptr)));
+    if (!font.loadFromFile("C:/Windows/Fonts/arial.ttf"))
+    {
+        std::cerr << "Failed to load font" << std::endl;
+    }
+
+    hudText.setFont(font);
+    hudText.setCharacterSize(28);
+    hudText.setFillColor(sf::Color::White);
 
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
 
@@ -102,6 +116,8 @@ void Game::render()
         mob->draw(window);
     }
 
+    drawHud();
+
     window.display();
 }
 
@@ -180,4 +196,31 @@ void Game::spawnMob()
     {
         mobs.push_back(new TankMob(position));
     }
+}
+
+void Game::updateHud()
+{
+    std::stringstream ss;
+
+    ss << "Player: " << playerName << "\n";
+    ss << "HP: " << player.getHp() << "\n";
+    ss << "Score: " << score;
+
+    hudText.setString(ss.str());
+
+    sf::FloatRect bounds = hudText.getLocalBounds();
+
+    float x = window.getSize().x - bounds.width - 30.f;
+    float y = 30.f;
+
+    hudText.setPosition(x, y);
+}
+
+void Game::drawHud()
+{
+    window.setView(window.getDefaultView());
+
+    updateHud();
+
+    window.draw(hudText);
 }
