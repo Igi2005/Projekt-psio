@@ -4,6 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 
+class Player;
+
 class Mob
 {
 protected:
@@ -15,6 +17,9 @@ protected:
     int damage;
     bool alive;
 
+    float attackTimer;
+    float attackCooldown;
+
 public:
     Mob(sf::Vector2f startPosition, const std::string& texturePath);
     virtual ~Mob();
@@ -23,6 +28,7 @@ public:
     virtual void draw(sf::RenderWindow& window);
 
     void takeDamage(int value);
+    void attack(Player& player, float dt);
 
     bool isAlive() const;
     sf::Vector2f getPosition() const;

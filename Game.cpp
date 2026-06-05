@@ -107,6 +107,12 @@ void Game::update(float dt)
     for (Mob* mob : mobs)
     {
         mob->update(dt, player.getPosition());
+        mob->attack(player, dt);
+    }
+
+    if (!player.isAlive())
+    {
+        window.close();
     }
 }
 

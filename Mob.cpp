@@ -1,10 +1,10 @@
 #include "Mob.h"
-
+#include "Player.h"
 #include <iostream>
 #include <cmath>
 
 Mob::Mob(sf::Vector2f startPosition, const std::string& texturePath)
-    : speed(100.f), hp(50), damage(10), alive(true)
+: speed(100.f), hp(50), damage(10), alive(true), attackTimer(0.f), attackCooldown(1.f)
 {
     if (!texture.loadFromFile(texturePath))
     {
@@ -83,4 +83,16 @@ sf::FloatRect Mob::getBounds() const
 int Mob::getPoints() const
 {
     return 10;
+}
+
+void Mob::attack(Player& player, float dt)
+{
+    attackTimer += dt;
+    //getBounds zwraca kordy do kolizji, intersects() sprawdza, czy te dwa prostokąty się przecinają
+    if (getBounds().intersects(player.getBounds()) && attackTimer >= attackCooldown)
+    {
+        player.takeDamage(damage);
+        //reset cooldawnu do ataku moba
+        attackTimer = 0.f;
+    }
 }

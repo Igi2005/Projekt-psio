@@ -77,17 +77,42 @@ void Player::update(float dt, sf::Vector2f mapSize)
     sprite.setPosition(position);
 }
 
+//rysowanie awatara gracza
 void Player::draw(sf::RenderWindow& window)
 {
     window.draw(sprite);
 }
 
+//zwracanie pozycji gracza
 sf::Vector2f Player::getPosition() const
 {
     return sprite.getPosition();
 }
 
+//zwracanie hp
 int Player::getHp() const
 {
     return hp;
+}
+
+//dostawanie dmg
+void Player::takeDamage(int damage)
+{
+    hp -= damage;
+
+    if (hp < 0)
+    {
+        hp = 0;
+    }
+}
+
+//to jest do kolizji czyli kiedy mob do nas podejdzie i moze zadawac dmg
+sf::FloatRect Player::getBounds() const
+{
+    return sprite.getGlobalBounds();
+}
+
+bool Player::isAlive() const
+{
+    return hp > 0;
 }
