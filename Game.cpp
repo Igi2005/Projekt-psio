@@ -15,7 +15,8 @@ Game::Game()
       spawnTimer(0.f),
       spawnCooldown(2.f),
       playerName("Robert"),
-      score(0)
+      score(0),
+      gameTime(0.0f)
 {
     srand(static_cast<unsigned>(time(nullptr)));
     if (!font.loadFromFile("C:/Windows/Fonts/arial.ttf"))
@@ -86,9 +87,25 @@ void Game::processEvents()
 
 void Game::update(float dt)
 {
+    gameTime += dt;
+    if (gameTime < 60.f)
+    {
+        spawnCooldown = 2.f;
+    }
+    else if (gameTime < 120.f)
+    {
+        spawnCooldown = 1.5f;
+    }
+    else if (gameTime < 180.f)
+    {
+        spawnCooldown = 1.f;
+    }
+    else
+    {
+        spawnCooldown = 0.5f;
+    }
     //aktualizuje gracza
     player.update(dt, map.getSize());
-
     //update kamery zeby za graczem szla
     updateCamera();
     //dodaje czas klatki do licznika spawnu.
@@ -227,11 +244,18 @@ void Game::updateHud()
 {
     //strumien ktory wyswietlamy na mapie
     std::stringstream ss;
-
+    int minutes = static_cast<int>(gameTime) / 60;
+    int seconds = static_cast<int>(gameTime) % 60;
     ss << "Player: " << playerName << "\n";
     ss << "HP: " << player.getHp() << "\n";
-    ss << "Score: " << score;
+    ss << "Score: " << score << "\n";
+    ss << "Time: " << minutes << ":";
+    if (seconds < 10)
+    {
+        ss << "0";
+    }
 
+    ss << seconds << "\n";
     hudText.setString(ss.str());
     //Pobiera rozmiar tekstu.
     sf::FloatRect bounds = hudText.getLocalBounds();

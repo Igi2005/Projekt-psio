@@ -31,6 +31,8 @@ private:
     sf::Text hudText;
     std::string playerName;
     int score;
+    //do spawnu mobow i licznika czasu
+    float gameTime;
     void processEvents();
     void update(float dt);
     void render();
