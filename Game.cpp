@@ -5,8 +5,15 @@
 #include <sstream>
 
 Game::Game()
-    : player(sf::Vector2f(400.f, 400.f)),
-      spawnTimer(0.f), spawnCooldown(2.f), playerName("Robert"), score(0)
+    : player(sf::Vector2f(
+        sf::VideoMode::getDesktopMode().width / 2.f,
+        sf::VideoMode::getDesktopMode().height / 2.f
+    )),
+      spawnTimer(0.f),
+      spawnCooldown(2.f),
+      playerName("Robert"),
+      score(0),
+      gameTime(0.0f)
 {
     srand(static_cast<unsigned>(time(nullptr)));
     if (!font.loadFromFile("Roboto_Condensed-Black.ttf")) {
@@ -39,11 +46,33 @@ void Game::processEvents() {
     }
 }
 
-void Game::update(float dt) {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
-        player.say("Zmykaj!");
+
+void Game::update(float dt)
+{    if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
+    player.say("Zmykaj!");
+}
+
+    gameTime += dt;
+    if (gameTime < 60.f)
+    {
+        spawnCooldown = 2.f;
     }
+    else if (gameTime < 120.f)
+    {
+        spawnCooldown = 1.5f;
+    }
+    else if (gameTime < 180.f)
+    {
+        spawnCooldown = 1.f;
+    }
+    else
+    {
+        spawnCooldown = 0.5f;
+    }
+    //aktualizuje gracza
     player.update(dt, map.getSize());
+    //update kamery zeby za graczem szla
+
     updateCamera();
     spawnTimer += dt;
     if (spawnTimer >= spawnCooldown) { spawnMob(); spawnTimer = 0.f; }
@@ -78,7 +107,19 @@ void Game::spawnMob() {
 
 void Game::updateHud() {
     std::stringstream ss;
-    ss << "Player: " << playerName << "\nHP: " << player.getHp() << "\nScore: " << score;
+
+    int minutes = static_cast<int>(gameTime) / 60;
+    int seconds = static_cast<int>(gameTime) % 60;
+    ss << "Player: " << playerName << "\n";
+    ss << "HP: " << player.getHp() << "\n";
+    ss << "Score: " << score << "\n";
+    ss << "Time: " << minutes << ":";
+    if (seconds < 10)
+    {
+        ss << "0";
+    }
+
+    ss << seconds << "\n";
     hudText.setString(ss.str());
     hudText.setPosition(window.getView().getCenter().x + 400, window.getView().getCenter().y - 300);
 }
