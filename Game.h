@@ -10,6 +10,7 @@
 #include "Mob.h"
 #include "FastMob.h"
 #include "TankMob.h"
+#include <SFML/Audio.hpp>
 
 class Game
 {
@@ -33,6 +34,8 @@ private:
     int score;
     //do spawnu mobow i licznika czasu
     float gameTime;
+    sf::SoundBuffer eSoundBuffer;
+    sf::Sound eSound;
     void processEvents();
     void update(float dt);
     void render();
