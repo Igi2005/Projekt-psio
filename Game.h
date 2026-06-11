@@ -11,6 +11,7 @@
 #include "FastMob.h"
 #include "TankMob.h"
 #include <SFML/Audio.hpp>
+#include "Bullet.h"
 
 class Game
 {
@@ -43,6 +44,10 @@ private:
     void spawnMob();
     void updateHud();
     void drawHud();
+    std::vector<Bullet> bullets;
+    void updateBullets(float dt);
+    void checkBulletMobCollisions();
+    void removeDeadMobs();
 
 public:
     Game();

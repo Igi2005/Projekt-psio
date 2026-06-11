@@ -8,8 +8,8 @@
 
 Game::Game()
     : player(sf::Vector2f(
-        sf::VideoMode(1280, 720).width / 2.f,
-        sf::VideoMode(1280, 720).height / 2.f
+        sf::VideoMode::getDesktopMode().width / 2.f,
+        sf::VideoMode::getDesktopMode().height / 2.f
     )),
       spawnTimer(0.f),
       spawnCooldown(2.f),
@@ -17,14 +17,29 @@ Game::Game()
       playerName("Robert"),
       score(0)
 {
-    // Ustawienie losowania, żeby moby nie pojawiały się zawsze w tych samych miejscach
     srand(static_cast<unsigned>(time(nullptr)));
 
-    // Wczytanie czcionki używanej do HUD-a
+    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+
+    window.create(
+        desktop,
+        "Survival Arena",
+        sf::Style::Fullscreen
+    );
+
+    window.setFramerateLimit(60);
+
+    worldView = window.getDefaultView();
+
     if (!font.loadFromFile("Roboto_Condensed-Black.ttf"))
     {
         std::cerr << "Blad: Nie znaleziono Roboto_Condensed-Black.ttf" << std::endl;
     }
+
+    hudText.setFont(font);
+    hudText.setCharacterSize(28);
+    hudText.setFillColor(sf::Color::White);
+
     if (!eSoundBuffer.loadFromFile("zmykaj.wav"))
     {
         std::cerr << "Blad: Nie znaleziono zmykaj.wav" << std::endl;
@@ -32,26 +47,10 @@ Game::Game()
 
     eSound.setBuffer(eSoundBuffer);
     eSound.setVolume(80.f);
-
-    // Ustawienie wyglądu tekstu HUD
-    hudText.setFont(font);
-    hudText.setCharacterSize(28);
-    hudText.setFillColor(sf::Color::White);
-
-    // Tworzenie okna gry
-    window.create(sf::VideoMode(1280, 720), "Survival Arena");
-    window.setFramerateLimit(60);
-
-    // Pobranie domyślnej kamery okna
-    worldView = window.getDefaultView();
-
-    // Ustawienie kamery na pozycję gracza
-    worldView.setCenter(player.getPosition());
 }
 
 Game::~Game()
 {
-    // Usuwanie mobów utworzonych przez new
     for (Mob* mob : mobs)
     {
         delete mob;
@@ -62,10 +61,8 @@ Game::~Game()
 
 void Game::run()
 {
-    // Główna pętla gry
     while (window.isOpen())
     {
-        // dt = czas między klatkami
         float dt = clock.restart().asSeconds();
 
         processEvents();
@@ -74,20 +71,26 @@ void Game::run()
     }
 }
 
-void Game::processEvents() {
+void Game::processEvents()
+{
     sf::Event event;
 
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
+    while (window.pollEvent(event))
+    {
+        if (event.type == sf::Event::Closed)
+        {
             window.close();
         }
 
-        if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Escape) {
+        if (event.type == sf::Event::KeyPressed)
+        {
+            if (event.key.code == sf::Keyboard::Escape)
+            {
                 window.close();
             }
 
-            if (event.key.code == sf::Keyboard::E) {
+            if (event.key.code == sf::Keyboard::E)
+            {
                 player.say("Zmykaj!");
                 eSound.play();
             }
@@ -97,11 +100,8 @@ void Game::processEvents() {
 
 void Game::update(float dt)
 {
-
-    // Zwiększanie całkowitego czasu gry
     gameTime += dt;
 
-    // Im dłużej gracz żyje, tym częściej pojawiają się przeciwnicy
     if (gameTime < 60.f)
     {
         spawnCooldown = 2.f;
@@ -119,31 +119,33 @@ void Game::update(float dt)
         spawnCooldown = 0.5f;
     }
 
-    // Aktualizacja gracza i ograniczenie jego pozycji do mapy
     player.update(dt, map.getSize());
 
-    // Aktualizacja kamery, żeby podążała za graczem
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && player.canShoot())
+    {
+        bullets.push_back(player.shoot());
+    }
+
     updateCamera();
 
-    // Licznik czasu od ostatniego spawnu
     spawnTimer += dt;
 
-    // Jeżeli minął cooldown, tworzymy nowego moba
     if (spawnTimer >= spawnCooldown)
     {
         spawnMob();
         spawnTimer = 0.f;
     }
 
-    // Aktualizacja mobów:
-    // każdy mob idzie w stronę gracza i sprawdza, czy może go zaatakować
     for (Mob* mob : mobs)
     {
         mob->update(dt, player.getPosition());
         mob->attack(player, dt);
     }
 
-    // Jeżeli gracz nie żyje, zamykamy grę
+    updateBullets(dt);
+    checkBulletMobCollisions();
+    removeDeadMobs();
+
     if (!player.isAlive())
     {
         window.close();
@@ -154,10 +156,8 @@ void Game::render()
 {
     window.clear();
 
-    // Ustawienie kamery świata gry
     window.setView(worldView);
 
-    // Rysowanie obiektów świata gry
     map.draw(window);
     player.draw(window);
 
@@ -166,7 +166,11 @@ void Game::render()
         mob->draw(window);
     }
 
-    // Rysowanie HUD-a na domyślnym widoku ekranu
+    for (Bullet& bullet : bullets)
+    {
+        bullet.draw(window);
+    }
+
     drawHud();
 
     window.display();
@@ -174,22 +178,21 @@ void Game::render()
 
 void Game::updateCamera()
 {
-    sf::Vector2f pos = player.getPosition();
+    sf::Vector2f playerPosition = player.getPosition();
     sf::Vector2f mapSize = map.getSize();
     sf::Vector2f viewSize = worldView.getSize();
 
-    // Ograniczenie środka kamery do granic mapy
-    float cx = std::max(
+    float cameraX = std::max(
         viewSize.x / 2.f,
-        std::min(pos.x, mapSize.x - viewSize.x / 2.f)
+        std::min(playerPosition.x, mapSize.x - viewSize.x / 2.f)
     );
 
-    float cy = std::max(
+    float cameraY = std::max(
         viewSize.y / 2.f,
-        std::min(pos.y, mapSize.y - viewSize.y / 2.f)
+        std::min(playerPosition.y, mapSize.y - viewSize.y / 2.f)
     );
 
-    worldView.setCenter(cx, cy);
+    worldView.setCenter(cameraX, cameraY);
 }
 
 void Game::spawnMob()
@@ -206,7 +209,6 @@ void Game::spawnMob()
 
     sf::Vector2f pos;
 
-    // Losowanie pozycji poza aktualnym widokiem kamery
     do
     {
         pos.x = static_cast<float>(rand() % static_cast<int>(mapSize.x));
@@ -219,7 +221,6 @@ void Game::spawnMob()
         pos.y < bottom
     );
 
-    // Losowanie typu przeciwnika
     int randomType = rand() % 3;
 
     if (randomType == 0)
@@ -233,6 +234,66 @@ void Game::spawnMob()
     else
     {
         mobs.push_back(new TankMob(pos));
+    }
+}
+
+void Game::updateBullets(float dt)
+{
+    for (Bullet& bullet : bullets)
+    {
+        bullet.update(dt);
+    }
+
+    bullets.erase(
+        std::remove_if(
+            bullets.begin(),
+            bullets.end(),
+            [](const Bullet& bullet)
+            {
+                return !bullet.isActive();
+            }
+        ),
+        bullets.end()
+    );
+}
+
+void Game::checkBulletMobCollisions()
+{
+    for (Bullet& bullet : bullets)
+    {
+        if (!bullet.isActive())
+        {
+            continue;
+        }
+
+        for (Mob* mob : mobs)
+        {
+            if (mob->isAlive() && bullet.getBounds().intersects(mob->getBounds()))
+            {
+                mob->takeDamage(bullet.getDamage());
+                bullet.deactivate();
+                break;
+            }
+        }
+    }
+}
+
+void Game::removeDeadMobs()
+{
+    for (auto it = mobs.begin(); it != mobs.end(); )
+    {
+        if (!(*it)->isAlive())
+        {
+            score += (*it)->getPoints();
+
+            delete *it;
+
+            it = mobs.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
     }
 }
 
@@ -259,10 +320,8 @@ void Game::updateHud()
 
     hudText.setString(ss.str());
 
-    // Pobranie rozmiaru tekstu, żeby ustawić go przy prawej krawędzi
     sf::FloatRect bounds = hudText.getLocalBounds();
 
-    // Ustawienie tekstu w prawym górnym rogu
     float x = window.getSize().x - bounds.width - 30.f;
     float y = 30.f;
 
@@ -271,8 +330,6 @@ void Game::updateHud()
 
 void Game::drawHud()
 {
-    // Przełączenie na domyślny widok okna.
-    // Dzięki temu HUD jest przyklejony do ekranu, a nie do mapy.
     window.setView(window.getDefaultView());
 
     updateHud();

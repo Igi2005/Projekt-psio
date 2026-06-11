@@ -3,8 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-Mob::Mob(sf::Vector2f startPosition, const std::string& texturePath)
-: speed(100.f), hp(50), damage(10), alive(true), attackTimer(0.f), attackCooldown(1.f)
+Mob::Mob(sf::Vector2f startPosition, const std::string& texturePath): speed(100.f), hp(50), damage(10), alive(true), attackTimer(0.f), attackCooldown(1.f)
 {
     if (!texture.loadFromFile(texturePath))
     {

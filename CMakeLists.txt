@@ -21,6 +21,10 @@ add_executable(sfml_project
         FastMob.h
         TankMob.cpp
         TankMob.h
+        Bullet.cpp
+        Bullet.h
+        Weapon.cpp
+        Weapon.h
 )
 
 target_include_directories(sfml_project PRIVATE

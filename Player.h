@@ -1,7 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <string>
-
+#include "Bullet.h"
+#include "Weapon.h"
 class Player {
 private:
     sf::Sprite sprite;
@@ -11,7 +12,8 @@ private:
     float speechTimer;
     float speed;
     int hp;
-
+    bool lookingRight;
+    Weapon weapon;
 public:
     Player(sf::Vector2f startPosition);
     void update(float dt, sf::Vector2f mapSize);
@@ -22,4 +24,6 @@ public:
     void takeDamage(int damage);
     sf::FloatRect getBounds() const;
     bool isAlive() const;
+    Bullet shoot();
+    bool canShoot() const;
 };
