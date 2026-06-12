@@ -12,7 +12,7 @@
 #include "TankMob.h"
 #include <SFML/Audio.hpp>
 #include "Bullet.h"
-
+#include "RecordManager.h"
 class Game
 {
 private:
@@ -48,7 +48,14 @@ private:
     void updateBullets(float dt);
     void checkBulletMobCollisions();
     void removeDeadMobs();
-
+    RecordManager recordManager;
+    bool gameOver;
+    bool resultSaved;
+    sf::Text gameOverText;
+    std::vector<std::string> records;
+    void renderGameOver();
+    void loadGameOverRecords();
+    void resetGame();
 public:
     Game();
     ~Game();

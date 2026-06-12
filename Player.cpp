@@ -163,3 +163,14 @@ bool Player::canShoot() const
 {
     return weapon.canShoot();
 }
+
+void Player::reset(sf::Vector2f startPosition)
+{
+    sprite.setPosition(startPosition);
+
+    hp = 100;
+    speechTimer = 0.f;
+    lookingRight = true;
+
+    weapon.reset();
+}

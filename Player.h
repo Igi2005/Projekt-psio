@@ -26,4 +26,5 @@ public:
     bool isAlive() const;
     Bullet shoot();
     bool canShoot() const;
+    void reset(sf::Vector2f startPosition);
 };

@@ -15,7 +15,10 @@ Game::Game()
       spawnCooldown(2.f),
       gameTime(0.f),
       playerName("Robert"),
-      score(0)
+      score(0),
+      gameOver(false),
+      resultSaved(false),
+      recordManager("data.csv")
 {
     srand(static_cast<unsigned>(time(nullptr)));
 
@@ -39,6 +42,10 @@ Game::Game()
     hudText.setFont(font);
     hudText.setCharacterSize(28);
     hudText.setFillColor(sf::Color::White);
+    gameOverText.setFont(font);
+    gameOverText.setCharacterSize(26);
+    gameOverText.setFillColor(sf::Color::White);
+    gameOverText.setPosition(80.f, 80.f);
 
     if (!eSoundBuffer.loadFromFile("zmykaj.wav"))
     {
@@ -94,12 +101,20 @@ void Game::processEvents()
                 player.say("Zmykaj!");
                 eSound.play();
             }
+            if (event.key.code == sf::Keyboard::R && gameOver)
+            {
+                resetGame();
+            }
         }
     }
 }
 
 void Game::update(float dt)
 {
+    if (gameOver)
+    {
+        return;
+    }
     gameTime += dt;
 
     if (gameTime < 60.f)
@@ -109,7 +124,7 @@ void Game::update(float dt)
     else if (gameTime < 120.f)
     {
         spawnCooldown = 1.5f;
-    }aaaaaaaaaa
+    }
     else if (gameTime < 180.f)
     {
         spawnCooldown = 1.f;
@@ -148,14 +163,27 @@ void Game::update(float dt)
 
     if (!player.isAlive())
     {
-        window.close();
+        if (!resultSaved)
+        {
+            recordManager.saveResult(playerName, gameTime, score);
+            recordManager.setData();
+            records = recordManager.getData();
+
+            resultSaved = true;
+            gameOver = true;
+        }
     }
 }
 
 void Game::render()
 {
     window.clear();
-
+    if (gameOver)
+    {
+        renderGameOver();
+        window.display();
+        return;
+    }
     window.setView(worldView);
 
     map.draw(window);
@@ -335,4 +363,70 @@ void Game::drawHud()
     updateHud();
 
     window.draw(hudText);
+}
+
+void Game::renderGameOver()
+{
+    window.setView(window.getDefaultView());
+
+    std::stringstream ss;
+
+    ss << "KONIEC GRY\n\n";
+    ss << "Twoj wynik:\n";
+    ss << "Player: " << playerName << "\n";
+
+    int minutes = static_cast<int>(gameTime) / 60;
+    int seconds = static_cast<int>(gameTime) % 60;
+
+    ss << "Time: " << minutes << ":";
+
+    if (seconds < 10)
+    {
+        ss << "0";
+    }
+
+    ss << seconds << "\n";
+    ss << "Score: " << score << "\n\n";
+
+    ss << "Lista wynikow z pliku:\n\n";
+
+    for (std::string line : records)
+    {
+        ss << line << "\n";
+    }
+
+    ss << "\nNacisnij R, aby zagrac ponownie.";
+    ss << "\nNacisnij ESC, aby zamknac gre.";
+
+    gameOverText.setString(ss.str());
+
+    window.draw(gameOverText);
+}
+
+void Game::resetGame()
+{
+    for (Mob* mob : mobs)
+    {
+        delete mob;
+    }
+
+    mobs.clear();
+    bullets.clear();
+
+    gameTime = 0.f;
+    spawnTimer = 0.f;
+    spawnCooldown = 2.f;
+    score = 0;
+
+    gameOver = false;
+    resultSaved = false;
+
+    records.clear();
+
+    player.reset(sf::Vector2f(
+        sf::VideoMode::getDesktopMode().width / 2.f,
+        sf::VideoMode::getDesktopMode().height / 2.f
+    ));
+
+    worldView = window.getDefaultView();
 }

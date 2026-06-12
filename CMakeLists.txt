@@ -25,6 +25,8 @@ add_executable(sfml_project
         Bullet.h
         Weapon.cpp
         Weapon.h
+        RecordManager.cpp
+        RecordManager.h
 )
 
 target_include_directories(sfml_project PRIVATE

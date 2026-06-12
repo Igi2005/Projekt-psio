@@ -25,3 +25,8 @@ Bullet Weapon::shoot(sf::Vector2f startPosition, sf::Vector2f direction)
 
     return Bullet(startPosition, direction);
 }
+
+void Weapon::reset()
+{
+    cooldownTimer = cooldown;
+}
